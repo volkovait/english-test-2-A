@@ -6,7 +6,7 @@
     grammar3: ['How', 'Where', 'How old', 'What', 'When', 'Who'],
     vocab4: ['D', 'F', 'A', 'B', 'G', 'E', 'C'],
     vocab5: ['sad', 'easy', 'small', 'big', 'hot', 'new'],
-    vocab6: ['ather', 'aughter', 'irl', 'usband', 'rother', 'hildren', 'omen'],
+    vocab6: ['ather', 'aughter', 'irl', 'usband', 'rother', 'hildren', 'oman'],
     howto7: [
       'How are your children?',
       "They're good.",
@@ -123,6 +123,38 @@
     ['Sam\'s mother is 51 / fifty-one.']
   );
 
+  var correctAnswersShort = [].concat(
+    ['My', 'My', 'Her', 'Her', 'Our', 'Their', 'His'],
+    ['How', 'Where', 'How old', 'What', 'When', 'Who'],
+    ['D', 'F', 'A', 'B', 'G', 'E', 'C'],
+    ['sad', 'easy', 'small', 'big', 'hot', 'new'],
+    ['father', 'daughter', 'girl', 'husband', 'brother', 'children', 'woman'],
+    [
+      'How are your children?', "They're good.", 'Are you OK?', "I'm tired.",
+      "How's your new cat?", "It's great!", 'How are your classes?', "They're great!",
+      'Thanks for the coffee.', 'No problem.'
+    ],
+    ['F', 'T', 'F', 'F', 'F'],
+    ['B', 'D', 'A', 'E', 'C'],
+    ['Ben'],
+    ['51']
+    ['Our', 'and', 'How old', 'and', "When's"],
+  );
+
+  var sectionThemes = [
+    '1. Притяжательные местоимения',
+    '2. Вопросительные слова',
+    '3. Счёт до 100',
+    '4. Прилагательные',
+    '5. Лексика: родственники',
+    '6. Порядок слов в предложении',
+    '7. Reading comprehension',
+    '8. Reading comprehension',
+    '9. Reading comprehension',
+    '10. Reading comprehension',
+    '11. Общая языковая эрудиция',
+  ];
+
   const toastEl = document.getElementById('result-toast');
   const checkBtn = document.getElementById('check-btn');
   const nameInput = document.getElementById('user-name');
@@ -144,6 +176,10 @@
     'rs6-1', 'rs7-1'
   ];
 
+  var STORAGE_KEY = 'u2a-form';
+  var saveFormTimeout = null;
+  var SAVE_DELAY_MS = 400;
+
   function getFieldValue(name) {
     if (name.indexOf('tf-') === 0) {
       var checked = document.querySelector('input[name="' + name + '"]:checked');
@@ -151,6 +187,71 @@
     }
     var el = document.querySelector('.test-section [name="' + name + '"]');
     return el ? el.value : '';
+  }
+
+  function setFieldValue(name, value) {
+    if (name === 'user-name') {
+      if (nameInput) nameInput.value = value || '';
+      return;
+    }
+    if (name.indexOf('tf-') === 0) {
+      document.querySelectorAll('input[name="' + name + '"]').forEach(function (r) {
+        r.checked = r.value === value;
+      });
+      return;
+    }
+    var el = document.querySelector('.test-section [name="' + name + '"]');
+    if (el) el.value = value || '';
+  }
+
+  function saveFormToStorage() {
+    try {
+      var data = { 'user-name': nameInput ? nameInput.value : '' };
+      questionNames.forEach(function (name) {
+        data[name] = getFieldValue(name);
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      console.warn('Не удалось сохранить форму', e);
+    }
+  }
+
+  function loadFormFromStorage() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      if (data['user-name'] !== undefined) setFieldValue('user-name', data['user-name']);
+      questionNames.forEach(function (name) {
+        if (data[name] !== undefined && data[name] !== '') setFieldValue(name, data[name]);
+      });
+    } catch (e) {
+      console.warn('Не удалось загрузить форму', e);
+    }
+  }
+
+  function scheduleSaveForm() {
+    if (saveFormTimeout) clearTimeout(saveFormTimeout);
+    saveFormTimeout = setTimeout(function () {
+      saveFormTimeout = null;
+      saveFormToStorage();
+    }, SAVE_DELAY_MS);
+  }
+
+  function clearFormAndStorage() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (e) {}
+    setFieldValue('user-name', '');
+    questionNames.forEach(function (name) {
+      setFieldValue(name, '');
+    });
+    clearFeedback();
+    if (scoreDisplay) {
+      scoreDisplay.classList.add('hidden');
+      scoreDisplay.textContent = '';
+    }
+    showToast('Форма очищена', 'info');
   }
 
   function isAllFilled() {
@@ -375,17 +476,17 @@
     var errors = [];
     var idx = 0;
     var sections = [
-      { names: ['g2-1', 'g2-2', 'g2-3', 'g2-4', 'g2-5', 'g2-6', 'g2-7'], text: false },
-      { names: ['g3-1', 'g3-2', 'g3-3', 'g3-4', 'g3-5', 'g3-6'], text: true },
-      { names: ['match4-1', 'match4-2', 'match4-3', 'match4-4', 'match4-5', 'match4-6', 'match4-7'], text: false },
-      { names: ['v5-1', 'v5-2', 'v5-3', 'v5-4', 'v5-5', 'v5-6'], text: true },
-      { names: ['v6-1', 'v6-2', 'v6-3', 'v6-4', 'v6-5', 'v6-6', 'v6-7'], text: true },
-      { names: ['w7-1a', 'w7-1b', 'w7-2a', 'w7-2b', 'w7-3a', 'w7-3b', 'w7-4a', 'w7-4b', 'w7-5a', 'w7-5b'], text: true },
-      { names: ['tf-1', 'tf-2', 'tf-3', 'tf-4', 'tf-5'], text: false },
-      { names: ['matchR-1', 'matchR-2', 'matchR-3', 'matchR-4', 'matchR-5'], text: false },
-      { names: ['rc-1', 'rc-2', 'rc-3', 'rc-4', 'rc-5'], text: true },
-      { names: ['rs6-1'], text: true, alternatives: [['ben']] },
-      { names: ['rs7-1'], text: true, alternatives: [['51', 'fifty-one']] }
+      { names: ['g2-1', 'g2-2', 'g2-3', 'g2-4', 'g2-5', 'g2-6', 'g2-7'], text: false, theme: sectionThemes[0] },
+      { names: ['g3-1', 'g3-2', 'g3-3', 'g3-4', 'g3-5', 'g3-6'], text: true, theme: sectionThemes[1] },
+      { names: ['match4-1', 'match4-2', 'match4-3', 'match4-4', 'match4-5', 'match4-6', 'match4-7'], text: false, theme: sectionThemes[2] },
+      { names: ['v5-1', 'v5-2', 'v5-3', 'v5-4', 'v5-5', 'v5-6'], text: true, theme: sectionThemes[3] },
+      { names: ['v6-1', 'v6-2', 'v6-3', 'v6-4', 'v6-5', 'v6-6', 'v6-7'], text: true, theme: sectionThemes[4] },
+      { names: ['w7-1a', 'w7-1b', 'w7-2a', 'w7-2b', 'w7-3a', 'w7-3b', 'w7-4a', 'w7-4b', 'w7-5a', 'w7-5b'], text: true, theme: sectionThemes[5] },
+      { names: ['tf-1', 'tf-2', 'tf-3', 'tf-4', 'tf-5'], text: false, theme: sectionThemes[6] },
+      { names: ['matchR-1', 'matchR-2', 'matchR-3', 'matchR-4', 'matchR-5'], text: false, theme: sectionThemes[7] },
+      { names: ['rc-1', 'rc-2', 'rc-3', 'rc-4', 'rc-5'], text: true, theme: sectionThemes[8] },
+      { names: ['rs6-1'], text: true, alternatives: [['ben']], theme: sectionThemes[9] },
+      { names: ['rs7-1'], text: true, alternatives: [['51', 'fifty-one']], theme: sectionThemes[10] }
     ];
     for (var s = 0; s < sections.length; s++) {
       var section = sections[s];
@@ -394,6 +495,7 @@
         var userVal = getFieldValue(name);
         var correctVal = correctAnswersFlat[idx];
         var correctDisplay = correctAnswersDisplay[idx];
+        var correctShort = correctAnswersShort[idx];
         var isText = section.text;
         var correct = false;
         if (name.indexOf('rc-') === 0) {
@@ -413,7 +515,9 @@
           errors.push({
             num: idx + 1,
             user: normalizeText(String(userVal)) === '' ? '(пусто)' : userVal,
-            correct: correctDisplay
+            correct: correctDisplay,
+            correctShort: correctShort,
+            theme: section.theme
           });
         }
         idx++;
@@ -497,25 +601,39 @@
     if (errors.length > 0) {
       var numCol = 3;
       var userCol = 14;
-      var correctCol = 40;
+      var correctCol = 24;
       var sep = ' │ ';
       var headerNum = padRight('№', numCol);
       var headerUser = padRight('Ваш ответ', userCol);
       var headerCorrect = padRight('Правильно', correctCol);
-      telegramMsg += '\n\n<b>Ошибки</b>\n<pre>';
-      telegramMsg += '┌─────┬─────────────────┬───────────────────────────────────────────┐\n';
-      telegramMsg += '│' + sep + headerNum + sep + headerUser + sep + headerCorrect + ' │\n';
-      telegramMsg += '├─────┼─────────────────┼───────────────────────────────────────────┤\n';
+      var byTheme = {};
       errors.forEach(function (e) {
-        var num = padRight(e.num, numCol);
-        var user = padRight(escapeHtml(e.user).slice(0, userCol), userCol);
-        var correct = escapeHtml(e.correct);
-        if (correct.length > correctCol) correct = correct.slice(0, correctCol - 2) + '..';
-        correct = padRight(correct, correctCol);
-        telegramMsg += '│' + sep + num + sep + user + sep + correct + ' │\n';
+        if (!byTheme[e.theme]) byTheme[e.theme] = [];
+        byTheme[e.theme].push(e);
       });
-      telegramMsg += '└─────┴─────────────────┴───────────────────────────────────────────┘';
-      telegramMsg += '</pre>';
+      telegramMsg += '\n\n<b>Ошибки по темам</b>\n';
+      var themeOrder = sectionThemes.filter(function (t) { return byTheme[t]; });
+      themeOrder.forEach(function (theme) {
+        var list = byTheme[theme];
+        var useLongCorrect = theme === '6. Порядок слов в предложении' || theme === '7. Reading comprehension' || theme === '8. Reading comprehension';
+        var colCorrect = useLongCorrect ? 45 : correctCol;
+        var headerCorrectCur = padRight('Правильно', colCorrect);
+        telegramMsg += '\n<b>' + escapeHtml(theme) + '</b>\n<pre>';
+        telegramMsg += '┌─────┬─────────────────┬' + (new Array(colCorrect + 1).join('─')) + '┐\n';
+        telegramMsg += '│' + sep + headerNum + sep + headerUser + sep + headerCorrectCur + ' │\n';
+        telegramMsg += '├─────┼─────────────────┼' + (new Array(colCorrect + 1).join('─')) + '┤\n';
+        list.forEach(function (e) {
+          var num = padRight(e.num, numCol);
+          var user = padRight(escapeHtml(e.user).slice(0, userCol), userCol);
+          var correctText = useLongCorrect ? e.correct : (e.correctShort || e.correct);
+          var correct = escapeHtml(String(correctText));
+          if (correct.length > colCorrect) correct = correct.slice(0, colCorrect - 2) + '..';
+          correct = padRight(correct, colCorrect);
+          telegramMsg += '│' + sep + num + sep + user + sep + correct + ' │\n';
+        });
+        telegramMsg += '└─────┴─────────────────┴' + (new Array(colCorrect + 1).join('─')) + '┘';
+        telegramMsg += '</pre>\n';
+      });
     }
 
     var botToken = '8543757949:AAHkb7EeGKgHpNsH7DJN0sc3jgoM-3U4Ibg';
@@ -556,4 +674,19 @@
     var backdrop = confirmModal.querySelector('.modal-backdrop');
     if (backdrop) backdrop.addEventListener('click', hideModal);
   }
+
+  loadFormFromStorage();
+
+  var container = document.querySelector('.container');
+  if (container) {
+    container.addEventListener('input', function (e) {
+      if (e.target && (e.target.name === 'user-name' || questionNames.indexOf(e.target.name) !== -1)) scheduleSaveForm();
+    });
+    container.addEventListener('change', function (e) {
+      if (e.target && (e.target.name === 'user-name' || questionNames.indexOf(e.target.name) !== -1)) scheduleSaveForm();
+    });
+  }
+
+  var clearFormBtn = document.getElementById('clear-form-btn');
+  if (clearFormBtn) clearFormBtn.addEventListener('click', clearFormAndStorage);
 })();

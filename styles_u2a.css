@@ -356,6 +356,24 @@ header h1 {
   transform: scale(0.98);
 }
 
+.clear-form-btn {
+  display: block;
+  margin: 1rem auto 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.clear-form-btn:hover {
+  color: var(--ink);
+  border-color: var(--muted);
+}
+
 .toast {
   position: fixed;
   bottom: 2rem;
